@@ -1,2 +1,71 @@
 # sosa-fam-api
-This is the API Server we are going to use to have the applications communicate between each other.
+
+The API that every Sosa Fam app talks to: the family data-sharing app, the food storage app, and anything that comes later. It runs on ASP.NET Core 8 with Entity Framework Core and uses the SQL Server database defined in [sosa-fam-database](https://github.com/SosaNuvol/sosa-fam-database).
+
+## What is here so far
+
+- **Sign-in:** email and password through ASP.NET Core Identity. The API returns a 30-minute JWT access token and a 30-day refresh token. Each refresh token works only once, and the API stores only a hash of it. Apple and Google sign-in come next.
+- **Households:** create one, rename it, delete it, and list the households you belong to.
+- **Members:** list them, change roles (Owner, Adult, Member, Child), remove someone, or leave.
+- **Invites:** an Owner or Adult creates an 8-character code such as `K7QM-2XPA`. It works once and expires after 7 days by default. The API stores only its hash, and guesses are rate-limited.
+
+## How households are kept apart
+
+Three layers do this, and each one works even if the others have a bug:
+
+1. **Routes.** Every household route is `/households/{householdId}/...`. A filter checks that you are a member and returns 404 if you are not, so nobody can probe for other households.
+2. **EF Core.** Any entity that implements `IHouseholdScoped` is filtered automatically to the current household. Saving a row for a different household throws an error.
+3. **SQL Server row-level security.** `SessionContextInterceptor` copies the user and household into `SESSION_CONTEXT`, marked read-only, every time a connection opens. The database's security policy then hides and blocks other households' rows. `RowLevelSecurityTests` proves this layer holds on its own.
+
+Only two operations cross households: creating a household and accepting an invite. Both run inside `TenantContext.BeginSystemScope()` and do their own checks.
+
+### Adding tables for an app
+
+1. Add the table and its row-level security in sosa-fam-database (see its README).
+2. Make the entity implement `IHouseholdScoped`. Map it in `AppDbContext` and the household filter applies automatically.
+3. Put the endpoints under `app.MapHouseholdGroup()` and use `tenant.RequireRole(...)` where a role matters.
+4. Add a test that a second household cannot see or change the rows.
+
+## Endpoints
+
+| Method | Route | Who |
+| --- | --- | --- |
+| POST | `/auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout` | Anyone (rate-limited) |
+| GET | `/me` | Signed in |
+| GET, POST | `/households` | Signed in |
+| GET | `/households/{id}` | Member |
+| PATCH | `/households/{id}` | Owner, Adult |
+| DELETE | `/households/{id}` | Owner |
+| GET | `/households/{id}/members` | Member |
+| PATCH | `/households/{id}/members/{memberId}` | Rename yourself; Owner and Adult can change others and roles |
+| DELETE | `/households/{id}/members/{memberId}` | Leave yourself; Owner and Adult can remove others |
+| GET, POST | `/households/{id}/invites` | Owner, Adult |
+| DELETE | `/households/{id}/invites/{inviteId}` | Owner, Adult |
+| POST | `/invites/accept` | Signed in (rate-limited) |
+
+In Development, Swagger UI is at `/swagger`.
+
+## Run it locally
+
+You need the .NET 8 SDK and a SQL Server database with the sosa-fam-database scripts applied.
+
+```bash
+cd src/SosaFam.Api
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:SosaFam" "Server=<server>;Database=SosaFam;User Id=sosafam_api_login;Password=<password>;TrustServerCertificate=True"
+dotnet user-secrets set "Jwt:SigningKey" "<random string, at least 32 characters>"
+dotnet run
+```
+
+Keep secrets out of `appsettings.json`. On a server, set them as the environment variables `ConnectionStrings__SosaFam` and `Jwt__SigningKey`.
+
+## Tests
+
+The integration tests run the API in memory against a real SQL Server. They are skipped unless `SOSAFAM_TEST_DB` points to a migrated development database:
+
+```bash
+export SOSAFAM_TEST_DB="Server=localhost,1433;Database=SosaFam;User Id=sa;Password=<dev password>;TrustServerCertificate=True"
+dotnet test
+```
+
+The tests create users and households with random names and leave them in place, so use a development database.
