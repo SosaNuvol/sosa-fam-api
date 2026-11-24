@@ -69,3 +69,49 @@ public class RefreshToken
     public DateTime ExpiresAt { get; set; }
     public DateTime? RevokedAt { get; set; }
 }
+
+/// <summary>A store the household shops at (WinCo, Costco, ...). Shared by every app.</summary>
+public class Store : IHouseholdScoped
+{
+    public Guid Id { get; set; }
+    public Guid HouseholdId { get; set; }
+    public string Name { get; set; } = "";
+    public DateTime CreatedAt { get; set; }
+}
+
+public class GroceryList : IHouseholdScoped
+{
+    public Guid Id { get; set; }
+    public Guid HouseholdId { get; set; }
+    public string Name { get; set; } = "";
+    public Guid CreatedByUserId { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? ArchivedAt { get; set; }
+}
+
+public static class GrocerySources
+{
+    public const string Manual = "Manual";
+    public const string LowStock = "LowStock";
+    public static readonly string[] All = [Manual, LowStock];
+}
+
+public class GroceryItem : IHouseholdScoped
+{
+    public Guid Id { get; set; }
+    public Guid HouseholdId { get; set; }
+    public Guid ListId { get; set; }
+    public string Name { get; set; } = "";
+    public decimal? Quantity { get; set; }
+    public string? Unit { get; set; }
+    public string? Note { get; set; }
+    public Guid? StoreId { get; set; }
+    public string Source { get; set; } = GrocerySources.Manual;
+    /// <summary>The food storage app's product, when it added the item.</summary>
+    public Guid? ProductId { get; set; }
+    public bool IsChecked { get; set; }
+    public Guid? CheckedByUserId { get; set; }
+    public DateTime? CheckedAt { get; set; }
+    public Guid AddedByUserId { get; set; }
+    public DateTime CreatedAt { get; set; }
+}

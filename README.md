@@ -7,6 +7,7 @@ The API that every Sosa Fam app talks to: the family data-sharing app, the food 
 - **Sign-in:** email and password through ASP.NET Core Identity. The API returns a 30-minute JWT access token and a 30-day refresh token. Each refresh token works only once, and the API stores only a hash of it. Apple and Google sign-in come next.
 - **Households:** create one, rename it, delete it, and list the households you belong to.
 - **Members:** list them, change roles (Owner, Adult, Member, Child), remove someone, or leave.
+- **Grocery lists:** shared lists whose items are tagged by store (WinCo, Costco, ...), with a check-off that everyone watching sees right away.
 - **Invites:** an Owner or Adult creates an 8-character code such as `K7QM-2XPA`. It works once and expires after 7 days by default. The API stores only its hash, and guesses are rate-limited.
 
 ## How households are kept apart
@@ -42,6 +43,30 @@ Only two operations cross households: creating a household and accepting an invi
 | GET, POST | `/households/{id}/invites` | Owner, Adult |
 | DELETE | `/households/{id}/invites/{inviteId}` | Owner, Adult |
 | POST | `/invites/accept` | Signed in (rate-limited) |
+| GET, POST | `/households/{id}/stores` | Member |
+| PATCH | `/households/{id}/stores/{storeId}` | Member |
+| DELETE | `/households/{id}/stores/{storeId}` | Owner, Adult (its items become "any store") |
+| GET, POST | `/households/{id}/grocery-lists` (`?archived=true` for archived) | Member |
+| GET, PATCH | `/households/{id}/grocery-lists/{listId}` (rename, archive) | Member |
+| DELETE | `/households/{id}/grocery-lists/{listId}` | Whoever created it, Owner, Adult |
+| POST | `/households/{id}/grocery-lists/{listId}/clear-checked` | Member |
+| POST | `/households/{id}/grocery-lists/{listId}/items` | Member |
+| PUT, DELETE | `/households/{id}/grocery-lists/{listId}/items/{itemId}` | Member |
+| PUT | `/households/{id}/grocery-lists/{listId}/items/{itemId}/checked` | Member (children too) |
+
+## Live updates
+
+SignalR hub at `/hubs/household`. Connect with the access token (SignalR clients send it as the `access_token` query string), then call `JoinHousehold(householdId)`. Non-members get an error. Events:
+
+| Event | Arguments |
+| --- | --- |
+| `groceryListsChanged` | none: reload the lists |
+| `groceryItemUpserted` | `listId`, the item (same shape as the REST API) |
+| `groceryItemDeleted` | `listId`, `itemId` |
+
+Other apps can send their own events through `IHubContext<HouseholdHub>` to `HouseholdHub.Group(householdId)`. Someone removed from a household keeps receiving its events until they reconnect.
+
+Grocery items accept `source` (`Manual` or `LowStock`) and `productId`, so the food storage app can add low-stock products to a list.
 
 In Development, Swagger UI is at `/swagger`.
 
