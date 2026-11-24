@@ -21,6 +21,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, TenantContext 
     public DbSet<Member> Members => Set<Member>();
     public DbSet<Invite> Invites => Set<Invite>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Store> Stores => Set<Store>();
+    public DbSet<GroceryList> GroceryLists => Set<GroceryList>();
+    public DbSet<GroceryItem> GroceryItems => Set<GroceryItem>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -65,6 +68,34 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, TenantContext 
             e.Property(x => x.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
             e.Property(x => x.CodeHash).HasColumnType("binary(32)");
             e.Property(x => x.Role).HasMaxLength(10);
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        });
+
+        b.Entity<Store>(e =>
+        {
+            e.ToTable("Stores", "core");
+            e.Property(x => x.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+            e.Property(x => x.Name).HasMaxLength(60);
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        });
+
+        b.Entity<GroceryList>(e =>
+        {
+            e.ToTable("GroceryLists", "family");
+            e.Property(x => x.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+            e.Property(x => x.Name).HasMaxLength(100);
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        });
+
+        b.Entity<GroceryItem>(e =>
+        {
+            e.ToTable("GroceryItems", "family");
+            e.Property(x => x.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+            e.Property(x => x.Name).HasMaxLength(120);
+            e.Property(x => x.Quantity).HasPrecision(10, 2);
+            e.Property(x => x.Unit).HasMaxLength(20);
+            e.Property(x => x.Note).HasMaxLength(200);
+            e.Property(x => x.Source).HasMaxLength(10);
             e.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
         });
 

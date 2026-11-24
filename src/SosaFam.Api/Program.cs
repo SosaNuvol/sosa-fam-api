@@ -7,7 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SosaFam.Api.Auth;
 using SosaFam.Api.Data;
+using SosaFam.Api.Grocery;
 using SosaFam.Api.Households;
+using Microsoft.AspNetCore.SignalR;
+using SosaFam.Api.Realtime;
 using SosaFam.Api.Tenancy;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,9 +62,25 @@ builder.Services
             NameClaimType = "name",
             ClockSkew = TimeSpan.FromSeconds(30),
         };
+        // WebSockets cannot send headers, so SignalR clients pass the token in the query string.
+        o.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                var token = ctx.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(token) && ctx.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                    ctx.Token = token;
+                return Task.CompletedTask;
+            },
+        };
     });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<TokenService>();
+
+// ---- Live updates ----
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
+builder.Services.AddScoped<Notifier>();
 
 // ---- Rate limits ----
 builder.Services.AddRateLimiter(o =>
@@ -99,6 +118,8 @@ app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" })).WithTags("Health");
 app.MapAuthEndpoints();
 app.MapHouseholdEndpoints();
+app.MapGroceryEndpoints();
+app.MapHub<HouseholdHub>("/hubs/household");
 
 app.Run();
 
