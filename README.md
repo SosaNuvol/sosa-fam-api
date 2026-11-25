@@ -8,6 +8,7 @@ The API that every Sosa Fam app talks to: the family data-sharing app, the food 
 - **Households:** create one, rename it, delete it, and list the households you belong to.
 - **Members:** list them, change roles (Owner, Adult, Member, Child), remove someone, or leave.
 - **Grocery lists:** shared lists whose items are tagged by store (WinCo, Costco, ...), with a check-off that everyone watching sees right away.
+- **Food storage (pantry):** locations (Pantry, Fridge, Basement, ...), products with minimum and target levels, per-location stock with +/- deltas, moves, fridge Have / Low / Out, a restock list that feeds the grocery list, put-away after shopping, and a history of changes.
 - **Invites:** an Owner or Adult creates an 8-character code such as `K7QM-2XPA`. It works once and expires after 7 days by default. The API stores only its hash, and guesses are rate-limited.
 
 ## How households are kept apart
@@ -53,6 +54,21 @@ Only two operations cross households: creating a household and accepting an invi
 | POST | `/households/{id}/grocery-lists/{listId}/items` | Member |
 | PUT, DELETE | `/households/{id}/grocery-lists/{listId}/items/{itemId}` | Member |
 | PUT | `/households/{id}/grocery-lists/{listId}/items/{itemId}/checked` | Member (children too) |
+| GET, POST | `/households/{id}/pantry/locations` (GET creates Pantry, Fridge, Basement the first time) | Member |
+| PATCH | `/households/{id}/pantry/locations/{locationId}` | Member |
+| DELETE | `/households/{id}/pantry/locations/{locationId}` | Owner, Adult |
+| GET, POST | `/households/{id}/pantry/products` (`?search=`, `?category=`, `?needsRestock=true`) | Member |
+| GET, PUT, DELETE | `/households/{id}/pantry/products/{productId}` | Member |
+| GET | `/households/{id}/pantry/products/by-barcode/{barcode}` (404 when unknown) | Member |
+| POST | `/households/{id}/pantry/products/{productId}/stock/{locationId}/adjust` (`{ delta }`, Count locations) | Member |
+| PUT | `/households/{id}/pantry/products/{productId}/stock/{locationId}` (`{ quantity }` or `{ status }`) | Member |
+| POST | `/households/{id}/pantry/products/{productId}/move` | Member |
+| GET | `/households/{id}/pantry/needs` | Member |
+| POST | `/households/{id}/pantry/needs/add-to-list` (`{ listId, productIds? }`) | Member |
+| POST | `/households/{id}/pantry/put-away` (`{ groceryItemId, locationId, quantity? }`) | Member |
+| GET | `/households/{id}/pantry/activity` (`?take=50`) | Member |
+
+Pantry ids are Proxy-IDs such as `PAPR:31773:<guid>` (see the database repo's `.github/ProxyID-PrefixRegistry.md`); integer keys never leave the API. A grocery item's `productId` is a product's `groceryProductId` (the GUID segment of its Proxy-ID).
 
 ## Live updates
 
@@ -63,6 +79,10 @@ SignalR hub at `/hubs/household`. Connect with the access token (SignalR clients
 | `groceryListsChanged` | none: reload the lists |
 | `groceryItemUpserted` | `listId`, the item (same shape as the REST API) |
 | `groceryItemDeleted` | `listId`, `itemId` |
+| `pantryLocationsChanged` | none: reload the locations |
+| `pantryProductsChanged` | none: reload the products |
+| `pantryProductUpserted` | the product (same shape as the REST API, with its stock) |
+| `pantryProductDeleted` | `productId` |
 
 Other apps can send their own events through `IHubContext<HouseholdHub>` to `HouseholdHub.Group(householdId)`. Someone removed from a household keeps receiving its events until they reconnect.
 

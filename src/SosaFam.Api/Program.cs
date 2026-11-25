@@ -9,6 +9,7 @@ using SosaFam.Api.Auth;
 using SosaFam.Api.Data;
 using SosaFam.Api.Grocery;
 using SosaFam.Api.Households;
+using SosaFam.Api.Pantry;
 using Microsoft.AspNetCore.SignalR;
 using SosaFam.Api.Realtime;
 using SosaFam.Api.Tenancy;
@@ -81,6 +82,7 @@ builder.Services.AddScoped<TokenService>();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
 builder.Services.AddScoped<Notifier>();
+builder.Services.AddScoped<PantryNotifier>();
 
 // ---- Rate limits ----
 builder.Services.AddRateLimiter(o =>
@@ -119,6 +121,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" })).WithTags("Health"
 app.MapAuthEndpoints();
 app.MapHouseholdEndpoints();
 app.MapGroceryEndpoints();
+app.MapPantryEndpoints();
 app.MapHub<HouseholdHub>("/hubs/household");
 
 app.Run();
