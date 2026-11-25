@@ -198,7 +198,8 @@ try {
                 Pool    = Test-Path "IIS:\AppPools\$AppPool"
                 Folder  = Test-Path $SitePath
                 Secrets = $names
-                Hosting = [bool](Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\IIS Extensions\IIS AspNetCore Module V2' -ErrorAction SilentlyContinue)
+                # The module's DLL, not a registry key (that key often has no subkeys even when installed).
+                Hosting = Test-Path (Join-Path $env:ProgramFiles 'IIS\Asp.Net Core Module\V2\aspnetcorev2.dll')
             }
         }
         if (-not $state.Site -or -not $state.Pool) { throw "Site or app pool missing on $Server. Run once with -InitializeSite." }
