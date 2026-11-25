@@ -65,6 +65,9 @@ public static class GroceryEndpoints
             await using var tx = await db.Database.BeginTransactionAsync(ct);
             // Items at this store become "any store".
             await db.GroceryItems.Where(i => i.StoreId == storeId).ExecuteUpdateAsync(u => u.SetProperty(i => i.StoreId, (Guid?)null), ct);
+            // So do pantry products that preferred it, deleted ones too (FK_Products_Stores is NO ACTION).
+            await db.Products.Where(p => p.StoreId == storeId)
+                .ExecuteUpdateAsync(u => u.SetProperty(p => p.StoreId, (Guid?)null), ct);
             await db.Stores.Where(s => s.Id == storeId).ExecuteDeleteAsync(ct);
             await tx.CommitAsync(ct);
             await notify.ListsChanged(ct);
@@ -212,7 +215,7 @@ public static class GroceryEndpoints
             db.GroceryItems.Count(i => i.ListId == l.Id),
             db.GroceryItems.Count(i => i.ListId == l.Id && !i.IsChecked)));
 
-    private static IQueryable<GroceryItemDto> ItemQuery(AppDbContext db, Expression<Func<GroceryItem, bool>> where) =>
+    internal static IQueryable<GroceryItemDto> ItemQuery(AppDbContext db, Expression<Func<GroceryItem, bool>> where) =>
         db.GroceryItems.AsNoTracking().Where(where).Select(i => new GroceryItemDto(
             i.Id, i.ListId, i.Name, i.Quantity, i.Unit, i.Note,
             i.StoreId, db.Stores.Where(s => s.Id == i.StoreId).Select(s => s.Name).FirstOrDefault(),
