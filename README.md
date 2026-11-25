@@ -114,3 +114,7 @@ dotnet test
 ```
 
 The tests create users and households with random names and leave them in place, so use a development database.
+
+## Deploying to production
+
+See [docs/Deploying-the-API.md](docs/Deploying-the-API.md): IIS on QUADITMAPP001 as `sosa-fam-api.nuvol9.com`, published with `deploy/Publish-SosaFamApiProd.ps1`. Its secrets are set with `deploy/Set-SosaFamApiProdSecret.ps1`, which only you run.
