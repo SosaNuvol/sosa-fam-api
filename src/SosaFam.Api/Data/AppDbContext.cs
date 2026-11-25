@@ -6,7 +6,7 @@ using SosaFam.Api.Tenancy;
 namespace SosaFam.Api.Data;
 
 /// <summary>
-/// The schema is owned by the sosa-fam-database repository (DbUp scripts). This context
+/// The schema is owned by the sosa-fam-database repository (migrations in its Migrations/ folder). This context
 /// only maps to it: never call EnsureCreated or EF migrations against a real database.
 /// </summary>
 public class AppDbContext(DbContextOptions<AppDbContext> options, TenantContext tenant)
