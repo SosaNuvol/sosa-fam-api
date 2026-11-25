@@ -72,7 +72,7 @@ In Development, Swagger UI is at `/swagger`.
 
 ## Run it locally
 
-You need the .NET 8 SDK and a SQL Server database with the sosa-fam-database scripts applied.
+You need the .NET 8 SDK and a SQL Server database with the sosa-fam-database migrations applied.
 
 ```bash
 cd src/SosaFam.Api

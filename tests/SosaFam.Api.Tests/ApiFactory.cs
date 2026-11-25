@@ -8,7 +8,7 @@ namespace SosaFam.Api.Tests;
 
 /// <summary>
 /// Runs the API in memory against a real SQL Server database that already has the
-/// sosa-fam-database scripts applied. Set SOSAFAM_TEST_DB to its connection string;
+/// sosa-fam-database migrations applied. Set SOSAFAM_TEST_DB to its connection string;
 /// without it, these tests are skipped.
 /// </summary>
 public class ApiFactory : WebApplicationFactory<Program>
