@@ -100,7 +100,7 @@ if ($Rollback) {
     $session = New-PSSession -ComputerName $Server
     try {
         Invoke-Command -Session $session -ScriptBlock $serverHelpers
-        Invoke-Command -Session $session -ArgumentList $SitePath, $BackupRoot, $AppPool, $LocalPort, [bool]$WhatIf -ScriptBlock {
+        Invoke-Command -Session $session -ArgumentList $SitePath, $BackupRoot, $AppPool, $LocalPort, ([bool]$WhatIf) -ScriptBlock {
             param($SitePath, $BackupRoot, $AppPool, $LocalPort, $WhatIf)
             $ErrorActionPreference = 'Stop'
             $latest = Get-ChildItem $BackupRoot -Directory -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1
@@ -154,7 +154,7 @@ try {
         # One-time setup: app pool (no managed code, always running), site on the local port, folders.
         if ($InitializeSite) {
             Confirm-Target
-            Invoke-Command -Session $session -ArgumentList $SiteName, $AppPool, $SitePath, $BackupRoot, $LocalPort, [bool]$WhatIf -ScriptBlock {
+            Invoke-Command -Session $session -ArgumentList $SiteName, $AppPool, $SitePath, $BackupRoot, $LocalPort, ([bool]$WhatIf) -ScriptBlock {
                 param($SiteName, $AppPool, $SitePath, $BackupRoot, $LocalPort, $WhatIf)
                 $ErrorActionPreference = 'Stop'
                 Import-Module WebAdministration

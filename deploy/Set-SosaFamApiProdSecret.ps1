@@ -58,7 +58,7 @@ if ($PSCmdlet.ParameterSetName -eq 'Set') {
 
 $session = New-PSSession -ComputerName $Server
 try {
-    $result = Invoke-Command -Session $session -ArgumentList $PSCmdlet.ParameterSetName, $Name, $value, $AppPool, [bool]$NoRecycle -ScriptBlock {
+    $result = Invoke-Command -Session $session -ArgumentList $PSCmdlet.ParameterSetName, $Name, $value, $AppPool, ([bool]$NoRecycle) -ScriptBlock {
         param($Mode, $Name, $Value, $AppPool, $NoRecycle)
         $ErrorActionPreference = 'Stop'
         Add-Type -Path "$env:windir\System32\inetsrv\Microsoft.Web.Administration.dll"
