@@ -1,6 +1,6 @@
 # sosa-fam-api
 
-The API that every Sosa Fam app talks to: the family data-sharing app, the food storage app, and anything that comes later. It runs on ASP.NET Core 8 with Entity Framework Core and uses the SQL Server database defined in [sosa-fam-database](https://github.com/SosaNuvol/sosa-fam-database).
+The API that every Sosa Fam app talks to: the family data-sharing app, the food storage app, and anything that comes later. It runs on ASP.NET Core 10 with Entity Framework Core and uses the SQL Server database defined in [sosa-fam-database](https://github.com/SosaNuvol/sosa-fam-database).
 
 ## What is here so far
 
@@ -92,7 +92,7 @@ In Development, Swagger UI is at `/swagger`.
 
 ## Run it locally
 
-You need the .NET 8 SDK and a SQL Server database with the sosa-fam-database migrations applied.
+You need the .NET 10 SDK and a SQL Server database with the sosa-fam-database migrations applied.
 
 ```bash
 cd src/SosaFam.Api

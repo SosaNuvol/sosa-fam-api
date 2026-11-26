@@ -144,6 +144,8 @@ try {
     Write-Host 'Publishing...'
     & dotnet publish $project -c Release -o $out --nologo -v quiet | Out-Host
     if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed (exit code $LASTEXITCODE)." }
+    # Development settings are never needed on the server.
+    Remove-Item (Join-Path $out 'appsettings.Development.json') -ErrorAction SilentlyContinue
     Compress-Archive -Path (Join-Path $out '*') -DestinationPath $zip
     Write-Host ("Package: {0:N1} MB" -f ((Get-Item $zip).Length / 1MB))
 

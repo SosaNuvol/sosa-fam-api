@@ -6,7 +6,7 @@ Both scripts use PowerShell remoting with your own Windows sign-in. Nothing is s
 
 ## One-time setup
 
-1. Install the **.NET 8 Hosting Bundle** on the server if it isn't there yet. Solasta's API already needs it.
+1. The server needs the **.NET 10 Hosting Bundle** (ASP.NET Core Runtime 10.x). It is already on QUADITMAPP001.
 2. Preview, then create the app pool, site and folders:
    ```powershell
    .\deploy\Publish-SosaFamApiProd.ps1 -InitializeSite -WhatIf
