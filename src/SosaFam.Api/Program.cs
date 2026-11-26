@@ -120,6 +120,7 @@ app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" })).WithTags("Health");
 app.MapAuthEndpoints();
 app.MapHouseholdEndpoints();
+app.MapJoinPage();
 app.MapGroceryEndpoints();
 app.MapPantryEndpoints();
 app.MapHub<HouseholdHub>("/hubs/household");

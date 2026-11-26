@@ -44,6 +44,7 @@ Only two operations cross households: creating a household and accepting an invi
 | GET, POST | `/households/{id}/invites` | Owner, Adult |
 | DELETE | `/households/{id}/invites/{inviteId}` | Owner, Adult |
 | POST | `/invites/accept` | Signed in (rate-limited) |
+| GET | `/join/{code}` | Public web page for invite links: opens the app (`InviteLinks:AppScheme`) or Expo Go (`InviteLinks:ExpoGoUrl`). Looks nothing up |
 | GET, POST | `/households/{id}/stores` | Member |
 | PATCH | `/households/{id}/stores/{storeId}` | Member |
 | DELETE | `/households/{id}/stores/{storeId}` | Owner, Adult (its items become "any store") |
