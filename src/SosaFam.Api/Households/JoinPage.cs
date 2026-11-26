@@ -38,7 +38,7 @@ public static class JoinPage
         }).ExcludeFromDescription();
     }
 
-    internal static string Render(string? code, InviteLinkOptions options)
+    public static string Render(string? code, InviteLinkOptions options)
     {
         static string H(string s) => WebUtility.HtmlEncode(s);
         var body = new StringBuilder();
